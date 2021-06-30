@@ -62,6 +62,13 @@ export default {
       async startCamera(){
         await this.stopCamera()
         Webcam.attach("#user-video");
+        Webcam.set('constraints',{
+        image_format: "jpeg",
+        jpeg_quality: 90,
+        width: "100%",
+        height: "380",
+        facingMode: "environment"
+      });
         var video
         let self=this
         this.userStream = document.getElementById('user-video');
