@@ -10,16 +10,19 @@
       xl="12"
       class="mt-0 pt-0 pb-0 mb-0"
     >
-      <v-card
-        id="Camera"
-        width="100%"
-        min-height="380"
-        class="Camera"
-        elevation="0"
-      >
-      </v-card>
+    <!-- <v-card
+      id="user-video"
+      width="100%"
+      height="380"
+      class="Camera"
+      elevation="0"
+    >
+
+    </v-card> -->
+      <video id="user-video"></video> 
     </v-col>
  </v-row>
+ <v-btn @click="changeCamera">FLIP</v-btn>
  <v-btn @click="recordVideo">Capture</v-btn>
  <v-btn @click="startAgain">Retry</v-btn>
 </v-container>
@@ -36,10 +39,53 @@ export default {
     faceSnap: '',
     interval: null,
     newInterval: null,
+    userStream: null,
+    facingMode: 'environment'
   }),
   methods: {
+    changeCamera(){
+        if(this.facingMode=='environment'){
+          this.facingMode='user'
+        }else{
+          this.facingMode='environment'
+        }
+        this.startCamera()
+      },
+      stopCamera()
+        {
+          if(this.userStream &&this.userStream.srcObject.getTracks().length>0){
+            this.userStream.srcObject.getTracks().forEach( track=>{
+            track.stop()
+          })
+        }
+      },
+      async startCamera(){
+        await this.stopCamera()
+        Webcam.attach("#user-video");
+        var video
+        let self=this
+        this.userStream = document.getElementById('user-video');
+        this.userStream.style.width = document.width + 'px';
+        this.userStream.style.height = document.height + 'px';
+        this.userStream.setAttribute('autoplay', true);
+        this.userStream.setAttribute('muted', true);
+        this.userStream.setAttribute('playsinline', true);
+        // this.userStream.setAttribute("controls", false);
+
+        var constraints = {
+         audio: false,
+         video: {
+            facingMode: this.facingMode
+          }
+        }
+
+        navigator.mediaDevices.getUserMedia(constraints).then(function success(stream) {
+          self.userStream.srcObject = stream;
+        });
+        
+      },
     accessCamera() {
-      Webcam.attach("#Camera");
+      Webcam.attach("#user-video");
       Webcam.set('constraints',{
         image_format: "jpeg",
         jpeg_quality: 90,
@@ -91,7 +137,7 @@ export default {
               this.faceSnap = data_uri;
               console.log(this.faceSnap, "faceSnap::")
               // this.$store.commit("user/setFaceImage", this.faceSnap);
-              document.getElementById("Camera").innerHTML =
+              document.getElementById("user-video").innerHTML =
                 '<img style="display:flex;align-items: center; justify-content: center; width:95%; margin-left:12px; border-radius: 0px !important; " src="' +
                 data_uri +
                 '"/>';
@@ -100,12 +146,13 @@ export default {
         });
     },
     startAgain(){
-      this.accessCamera();
-
+      
+      this.imagesArray = [];
+      this.startCamera();
     }
   },
   mounted(){
-    this.accessCamera();
+    this.startCamera();
   },
 };
 </script>
