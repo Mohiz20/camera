@@ -103,13 +103,14 @@ export default {
     },
 
     recordVideo() {
-
+      var constraints = {
+        audio: false,
+        video: {
+          facingMode: this.facingMode
+        }
+      }
       navigator.mediaDevices
-        .getUserMedia({
-          audio: false,
-          video: true,
-          facingMode: "environment"
-        })
+        .getUserMedia(constraints)
         .then((stream) => {
           // console.log(stream, "stream:")
           const video = document.querySelector("video");
